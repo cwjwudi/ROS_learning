@@ -9,7 +9,12 @@
         2.初始化ROS节点
         3.创建节点句柄
         4.创建发布者对象
-        5.编写发布逻辑并发布数据
+        5.编写发布逻辑并发布数据target_link_libraries(person_talker
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(person_listener
+  ${catkin_LIBRARIES}
+)
 
 */
 

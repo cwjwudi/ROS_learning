@@ -7,10 +7,11 @@ project(plumbing_pub_sub)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
+find_package(catkin REQUIRED COMPONENTS # 简单理解为编译依赖
   roscpp
   rospy
   std_msgs
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -46,12 +47,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
-## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+# Generate messages in the 'msg' folder
+add_message_files(
+  FILES
+  Person.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -67,11 +67,11 @@ find_package(catkin REQUIRED COMPONENTS
 #   Action2.action
 # )
 
-## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+# Generate added messages and services with any dependencies listed here
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -102,10 +102,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
+catkin_package( # 简单理解为运行依赖
 #  INCLUDE_DIRS include
 #  LIBRARIES plumbing_pub_sub
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+ CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -136,7 +136,8 @@ include_directories(
 # add_executable(${PROJECT_NAME}_node src/plumbing_pub_sub_node.cpp)
 add_executable(demon01_pub src/demon01_pub.cpp)
 add_executable(demon02_sub src/demon02_sub.cpp)
-
+add_executable(demon03_pub_person src/demon03_pub_person.cpp)
+add_executable(demon04_sub_person src/demon04_sub_person.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -147,12 +148,22 @@ add_executable(demon02_sub src/demon02_sub.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# 用于统一编译msg和src时，msg还未生成头文件，src包含msg生成头文件的错误
+add_dependencies(demon03_pub_person ${PROJECT_NAME}_generate_messages_cpp) 
+add_dependencies(demon04_sub_person ${PROJECT_NAME}_generate_messages_cpp)
+
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(demon01_pub
   ${catkin_LIBRARIES}
 )
 target_link_libraries(demon02_sub
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(demon03_pub_person
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(demon04_sub_person
   ${catkin_LIBRARIES}
 )
 
@@ -167,8 +178,10 @@ target_link_libraries(demon02_sub
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-  scripts/demo01_pub_p.py
-  scripts/demo02_sub_p.py
+  scripts/demon01_pub_p.py
+  scripts/demon02_sub_p.py
+  scripts/demon03_pub_person_p.py
+  scripts/demon04_sub_person_p.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
